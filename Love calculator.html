@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Love Calculator — 100% Forever</title>
+  <style>
+    :root{
+      --bg:#fff0f6;
+      --card:#fff;
+      --accent:#ff4d88;
+      --accent-2:#ff85b1;
+      --text:#3b2a2a;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background:linear-gradient(135deg,var(--bg),#fff6f8);color:var(--text)}
+    .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:40px}
+    .card{width:100%;max-width:760px;background:radial-gradient(circle at 20% 10%,rgba(255,77,136,0.06),transparent),var(--card);border-radius:24px;padding:36px;box-shadow:0 12px 30px rgba(101,17,57,0.08);position:relative;overflow:hidden}
+    .hearts{position:absolute;inset:0;pointer-events:none}
+    header{display:flex;align-items:center;gap:14px}
+    .logo{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:26px;box-shadow:0 8px 22px rgba(255,77,136,0.18)}
+    h1{margin:0;font-size:22px}
+    p.lead{margin:6px 0 20px 0;color:#6b4b4b}
+    form{display:flex;gap:14px;flex-wrap:wrap}
+    .input{flex:1;min-width:180px}
+    input[type=text]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(101,17,57,0.06);font-size:15px}
+    .btn-row{display:flex;gap:12px;margin-top:10px}
+    button.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));border:none;color:white;padding:12px 18px;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 8px 18px rgba(255,77,136,0.18)}
+    button.ghost{background:transparent;border:1px solid rgba(101,17,57,0.06);padding:12px 16px;border-radius:12px;cursor:pointer}
+    .result{margin-top:26px;display:grid;grid-template-columns:1fr 160px;gap:18px;align-items:center}
+    .panel{padding:18px;border-radius:14px;background:linear-gradient(180deg,rgba(255,245,250,0.8),rgba(255,255,255,0.6));box-shadow:inset 0 1px 0 rgba(255,255,255,0.6)}
+    .meter{display:flex;align-items:center;gap:14px}
+    .percentage{font-size:46px;font-weight:900;color:var(--accent)}
+    .sub{color:#6b4b4b}
+    .heart-bubble{width:120px;height:120px;border-radius:999px;background:radial-gradient(circle at 30% 25%, #fff6fb, #fff0f6);display:flex;align-items:center;justify-content:center;font-size:48px}
+    .small{font-size:13px}
+
+    /* floating hearts */
+    .heart{position:absolute;font-size:22px;opacity:0;transform:translateY(0) scale(0.6)}
+
+    /* confetti canvas */
+    canvas{position:absolute;inset:0;pointer-events:none}
+
+    footer{margin-top:18px;color:#7a5960;font-size:13px}
+
+    @media (max-width:640px){.result{grid-template-columns:1fr}} 
+
+    /* fun gentle heartbeat animation for the hero heart */
+    .pulse{animation:pulse 1.5s infinite}
+    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="main">
+      <div class="hearts" aria-hidden="true"></div>
+      <canvas id="confetti"></canvas>
+
+      <header>
+        <div class="logo">💞</div>
+        <div>
+          <h1>Love Calculator — Always 100% ❤️</h1>
+          <p class="lead">Type your names, press the heart button, and watch the love bloom. This calculator loves you both — forever and ever.</p>
+        </div>
+      </header>
+
+      <form id="loveForm" onsubmit="return false;" aria-label="Love calculator form">
+        <div class="input">
+          <label class="small">Your name</label>
+          <input id="name1" type="text" placeholder="e.g. Meenal" value="" autocomplete="off">
+        </div>
+        <div class="input">
+          <label class="small">Their name</label>
+          <input id="name2" type="text" placeholder="e.g. Yuvraj" value="" autocomplete="off">
+        </div>
+
+        <div class="btn-row">
+          <button id="calc" class="primary" type="button">💘 Calculate Love</button>
+          <button id="reset" class="ghost" type="button">Reset</button>
+        </div>
+      </form>
+
+      <div class="result">
+        <div class="panel">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div class="meter">
+              <div>
+                <div class="percentage" id="percent">—%</div>
+                <div class="sub" id="message">True love knows no numbers... until now.</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:12px" class="small">Tip: Add nicknames or pet names for extra sparkle ✨</div>
+        </div>
+
+        <div class="panel" style="display:flex;align-items:center;justify-content:center;flex-direction:column">
+          <div class="heart-bubble pulse" id="bigHeart">💗</div>
+          <div style="margin-top:8px" class="small">Guaranteed match</div>
+        </div>
+      </div>
+
+      <footer>
+        Made with love. Remember: a sweet message means more than any number — but here's 100% fun for your romance! 🌹
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    // Always returns 100% but with an enjoyable animation and little niceties.
+    const calc = document.getElementById('calc');
+    const reset = document.getElementById('reset');
+    const percent = document.getElementById('percent');
+    const message = document.getElementById('message');
+    const bigHeart = document.getElementById('bigHeart');
+    const heartsContainer = document.querySelector('.hearts');
+    const confettiCanvas = document.getElementById('confetti');
+
+    function floatHeart(x,y,emoji="💖"){
+      const el = document.createElement('div');
+      el.className='heart';
+      el.style.left = (x - 12) + 'px';
+      el.style.top = (y - 12) + 'px';
+      el.textContent = emoji;
+      heartsContainer.appendChild(el);
+      // randomize animation
+      const dur = 3000 + Math.random()*2500;
+      const dx = (Math.random()-0.5)*120;
+      el.animate([
+        {opacity:0, transform:'translateY(0) scale(0.6)'},
+        {opacity:1, transform:'translateY(-40px) scale(1)'},
+        {opacity:0, transform:`translate(${dx}px, -${160 + Math.random()*80}px) scale(0.4)`}
+      ],{duration:dur,easing:'cubic-bezier(.22,.9,.28,1)'});
+      setTimeout(()=>el.remove(), dur+50);
+    }
+
+    // small burst of floating hearts from center
+    function burstHearts(count=10){
+      const rect = heartsContainer.getBoundingClientRect();
+      const cx = rect.width/2;
+      const cy = rect.height/2 - 30;
+      for(let i=0;i<count;i++){
+        setTimeout(()=>floatHeart(cx + (Math.random()-0.5)*200, cy + (Math.random()-0.5)*50, ['💖','💗','💕','❣️'][Math.floor(Math.random()*4)]), i*80);
+      }
+    }
+
+    // animated counter to 100
+    function animateTo100(){
+      let n=0;
+      percent.textContent = '0%';
+      message.textContent = 'Measuring the stars...';
+      bigHeart.textContent = '💗';
+      burstHearts(12);
+      const timer = setInterval(()=>{
+        n += Math.ceil((100 - n)/6);
+        if(n>100) n=100;
+        percent.textContent = n + '%';
+        if(n===100){
+          clearInterval(timer);
+          message.textContent = 'Perfect match — forever ❤️';
+          bigHeart.textContent = '❤️';
+          popConfetti();
+          // extra heart float
+          burstHearts(18);
+        }
+      },160);
+    }
+
+    calc.addEventListener('click', ()=>{
+      // cute validation
+      const a = document.getElementById('name1').value.trim();
+      const b = document.getElementById('name2').value.trim();
+      if(!a || !b){
+        message.textContent = 'Enter both names to unlock the magic ✨';
+        percent.textContent = '—%';
+        // tiny wobble
+        bigHeart.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:420});
+        return;
+      }
+      // playful hint: always 100
+      animateTo100();
+    });
+
+    reset.addEventListener('click', ()=>{
+      document.getElementById('name1').value = '';
+      document.getElementById('name2').value = '';
+      percent.textContent = '—%';
+      message.textContent = 'True love knows no numbers... until now.';
+      bigHeart.textContent = '💗';
+    });
+
+    // simple confetti implementation
+    function popConfetti(){
+      const c = confettiCanvas;
+      const dpr = window.devicePixelRatio || 1;
+      c.width = c.clientWidth * dpr;
+      c.height = c.clientHeight * dpr;
+      const ctx = c.getContext('2d');
+      ctx.scale(dpr,dpr);
+
+      const pieces = [];
+      const colors = ['#ff4d88','#ffd1e6','#ff85b1','#fff1f6'];
+      for(let i=0;i<80;i++){
+        pieces.push({
+          x: Math.random()*c.clientWidth,
+          y: -10 - Math.random()*80,
+          r: 6 + Math.random()*8,
+          vx: (Math.random()-0.5)*6,
+          vy: 2 + Math.random()*4,
+          color: colors[Math.floor(Math.random()*colors.length)],
+          rot: Math.random()*360,
+          vr: (Math.random()-0.5)*8
+        });
+      }
+
+      let t=0;
+      function frame(){
+        ctx.clearRect(0,0,c.clientWidth,c.clientHeight);
+        t+=1;
+        for(const p of pieces){
+          p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.rot += p.vr;
+          ctx.save();
+          ctx.translate(p.x,p.y);
+          ctx.rotate(p.rot*Math.PI/180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.6);
+          ctx.restore();
+        }
+        if(t<140) requestAnimationFrame(frame);
+        else ctx.clearRect(0,0,c.clientWidth,c.clientHeight);
+      }
+      frame();
+    }
+
+    // resize handler for canvas
+    function resizeCanvas(){
+      confettiCanvas.width = confettiCanvas.clientWidth * (window.devicePixelRatio||1);
+      confettiCanvas.height = confettiCanvas.clientHeight * (window.devicePixelRatio||1);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // small initial floating hearts to set mood
+    setTimeout(()=>burstHearts(8),800);
+  </script>
+</body>
+</html>
